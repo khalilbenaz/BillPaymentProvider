@@ -13,6 +13,7 @@ Une API complète de simulation de paiements de factures et de recharges téléc
 * [Notes importantes](#-notes-importantes)
 * [Development](#-development)
 * [Sécurité et bonnes pratiques](#-sécurité-et-bonnes-pratiques)
+* [Webhooks de notification après paiement](#-webhooks-de-notification-après-paiement)
 
 ## 🚀 Installation
 
@@ -755,4 +756,30 @@ Dans `appsettings.json` :
 }
 ```
 
----
+## 🔔 Webhooks de notification après paiement
+
+L’API peut notifier un système tiers via un webhook HTTP POST après chaque paiement réussi ou échoué (opérations PAY et PAY_MULTIPLE).
+
+- **Activation/configuration** :
+  - Dans `appsettings.json` :
+    ```json
+    "Webhook": {
+      "Url": "https://exemple.tiers/webhook/paiement",
+      "Enabled": true,
+      "TimeoutSeconds": 5
+    }
+    ```
+- **Payload envoyé** :
+  ```json
+  {
+    "SessionId": "...",
+    "ServiceId": "...",
+    "StatusCode": "...",
+    "StatusLabel": "...",
+    "ParamOut": { ... },
+    "Date": "2025-05-09T14:40:00Z"
+  }
+  ```
+- **Comportement** : la notification est envoyée en asynchrone, sans bloquer la réponse API. Les erreurs de webhook sont ignorées côté API (le paiement n’est jamais bloqué).
+
+- **Cas d’usage** : intégration avec ERP, CRM, monitoring, etc.

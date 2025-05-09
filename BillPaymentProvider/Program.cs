@@ -44,6 +44,9 @@ builder.Services.AddApplicationServices(builder.Configuration);
 // Injection du service UserService
 builder.Services.AddScoped<UserService>();
 
+// Injection du service WebhookService
+builder.Services.AddSingleton<WebhookService>();
+
 // Injection de AuditLogger et IHttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<BillPaymentProvider.Utils.AuditLogger>();

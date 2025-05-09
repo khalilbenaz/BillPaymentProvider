@@ -16,17 +16,20 @@ namespace BillPaymentProvider.Services
         private readonly ITransactionRepository _transactionRepository;
         private readonly PaymentHistoryService _historyService;
         private readonly IAppLogger _logger;
+        private readonly WebhookService _webhookService;
 
         public PaymentService(
             GenericPaymentProvider paymentProvider,
             ITransactionRepository transactionRepository,
             PaymentHistoryService historyService,
-            IAppLogger logger)
+            IAppLogger logger,
+            WebhookService webhookService)
         {
             _paymentProvider = paymentProvider;
             _transactionRepository = transactionRepository;
             _historyService = historyService;
             _logger = logger;
+            _webhookService = webhookService;
         }
 
         /// <summary>
@@ -54,7 +57,7 @@ namespace BillPaymentProvider.Services
                     return new List<B3gServiceResponse> { errorResponse };
                 }
 
-                var operation = operationObj.ToString().ToUpper();
+                var operation = operationObj?.ToString()?.ToUpper() ?? string.Empty;
 
                 // Exécuter l'opération demandée
                 List<B3gServiceResponse> responses;
@@ -108,6 +111,15 @@ namespace BillPaymentProvider.Services
                     if (operation == "PAY" || operation == "PAY_MULTIPLE")
                     {
                         _historyService.SaveAsync(request, response).Wait();
+                        // Notifier le webhook (asynchrone, ne bloque pas la réponse)
+                        _ = _webhookService.NotifyAsync(new {
+                            SessionId = response.SessionId,
+                            ServiceId = response.ServiceId,
+                            StatusCode = response.StatusCode,
+                            StatusLabel = response.StatusLabel,
+                            ParamOut = response.ParamOut,
+                            Date = DateTime.UtcNow
+                        });
                     }
                 }
 
