@@ -7,13 +7,15 @@ using BillPaymentProvider.Middleware;
 using BillPaymentProvider.Providers;
 using BillPaymentProvider.Services;
 using BillPaymentProvider.Utils;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers().AddJsonOptions(options => {
-    options.JsonSerializerOptions.PropertyNamingPolicy = null; // Pour garder les noms de propriétés tels quels
+    options.JsonSerializerOptions.PropertyNamingPolicy = null; // Pour garder les noms de propriï¿½tï¿½s tels quels
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -26,7 +28,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
-// Ajouter le service de logging personnalisé
+// Ajouter le service de logging personnalisï¿½
 builder.Services.AddSingleton<IAppLogger, SqliteAppLogger>();
 
 // Configurer le middleware d'idempotence
@@ -36,31 +38,58 @@ builder.Services.AddScoped<IdempotencyMiddleware>();
 // Ajouter les services de l'application
 builder.Services.AddApplicationServices(builder.Configuration);
 
+// Injection du service UserService
+builder.Services.AddScoped<UserService>();
+
 // Configurer CORS
 builder.Services.AddApplicationCors();
 
+// Configuration JWT (clÃ© Ã  personnaliser)
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "votre_cle_secrete_super_longue";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "BillPaymentProvider";
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
 var app = builder.Build();
 
-// Configurer le pipeline de requêtes HTTP
+// Configurer le pipeline de requï¿½tes HTTP
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Egypt BillPayment API v1");
     c.RoutePrefix = string.Empty;
     c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
-    c.DefaultModelsExpandDepth(-1); // Cacher les modèles par défaut
+    c.DefaultModelsExpandDepth(-1); // Cacher les modï¿½les par dï¿½faut
 });
 
-// Utiliser les middlewares personnalisés
+// Utiliser les middlewares personnalisï¿½s
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseMiddleware<IdempotencyMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseAuthentication(); // Ajout de l'authentification
 app.UseAuthorization();
 app.MapControllers();
 
-// Initialiser la base de données
+// Initialiser la base de donnï¿½es
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -69,23 +98,23 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<AppDbContext>();
         var logger = services.GetRequiredService<IAppLogger>();
 
-        // S'assurer que la base de données est créée
+        // S'assurer que la base de donnï¿½es est crï¿½ï¿½e
         context.Database.EnsureCreated();
 
-        // Initialiser les données - utiliser l'instance plutôt que la méthode statique
+        // Initialiser les donnï¿½es - utiliser l'instance plutï¿½t que la mï¿½thode statique
         if (!context.BillerConfigurations.Any())
         {
-            logger.LogInfo("Initialisation de la base de données...");
+            logger.LogInfo("Initialisation de la base de donnï¿½es...");
 
-            // Créer une instance de DataSeeder et appeler sa méthode SeedData
+            // Crï¿½er une instance de DataSeeder et appeler sa mï¿½thode SeedData
             var dataSeeder = new DataSeeder(context);
             dataSeeder.SeedData();
 
-            logger.LogInfo("Base de données initialisée avec succès");
+            logger.LogInfo("Base de donnï¿½es initialisï¿½e avec succï¿½s");
         }
         else
         {
-            logger.LogInfo("Base de données déjà initialisée");
+            logger.LogInfo("Base de donnï¿½es dï¿½jï¿½ initialisï¿½e");
         }
     }
     catch (Exception ex)
@@ -93,7 +122,7 @@ using (var scope = app.Services.CreateScope())
         try
         {
             var logger = services.GetRequiredService<IAppLogger>();
-            logger.LogError($"Une erreur s'est produite lors de l'initialisation de la base de données: {ex.Message}");
+            logger.LogError($"Une erreur s'est produite lors de l'initialisation de la base de donnï¿½es: {ex.Message}");
         }
         catch
         {

@@ -33,6 +33,30 @@ namespace BillPaymentProvider.Utils
 
             // Créer quelques transactions de test
             SeedTransactions();
+
+            // Créer un utilisateur admin, user et manager si aucun utilisateur n'existe
+            if (!_dbContext.Users.Any())
+            {
+                _dbContext.Users.Add(new User
+                {
+                    Username = "admin",
+                    PasswordHash = "admin",
+                    Role = "Admin"
+                });
+                _dbContext.Users.Add(new User
+                {
+                    Username = "user",
+                    PasswordHash = "user",
+                    Role = "User"
+                });
+                _dbContext.Users.Add(new User
+                {
+                    Username = "manager",
+                    PasswordHash = "manager",
+                    Role = "Manager"
+                });
+                _dbContext.SaveChanges();
+            }
         }
 
         /// <summary>

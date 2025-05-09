@@ -30,6 +30,31 @@ namespace BillPaymentProvider.Extensions
                     }
                 });
 
+                // Ajout de la sécurité JWT dans Swagger
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Exemple: 'Bearer {token}'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT"
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+
                 // Inclure les commentaires XML
                 var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
                 foreach (var xmlFile in xmlFiles)

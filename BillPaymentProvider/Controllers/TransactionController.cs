@@ -1,6 +1,7 @@
 ﻿using BillPaymentProvider.Core.Interfaces;
 using BillPaymentProvider.Core.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BillPaymentProvider.Controllers
 {
@@ -9,6 +10,8 @@ namespace BillPaymentProvider.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
+    [Authorize(Roles = "Admin")]
     [Produces("application/json")]
     public class TransactionController : ControllerBase
     {

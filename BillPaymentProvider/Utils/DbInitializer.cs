@@ -53,6 +53,30 @@ namespace BillPaymentProvider.Utils
                 // Ajouter quelques logs système
                 CreateSystemLogs(context);
 
+                // Ajouter un utilisateur admin par défaut si aucun utilisateur n'existe
+                if (!context.Users.Any())
+                {
+                    context.Users.Add(new User
+                    {
+                        Username = "admin",
+                        PasswordHash = "admin", // À remplacer par un hash sécurisé en prod
+                        Role = "Admin"
+                    });
+                    context.Users.Add(new User
+                    {
+                        Username = "user",
+                        PasswordHash = "user",
+                        Role = "User"
+                    });
+                    context.Users.Add(new User
+                    {
+                        Username = "manager",
+                        PasswordHash = "manager",
+                        Role = "Manager"
+                    });
+                    context.SaveChanges();
+                }
+
                 logger.LogInfo("Base de données initialisée avec succès.");
             }
             catch (Exception ex)

@@ -1,6 +1,7 @@
 ﻿using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Data.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BillPaymentProvider.Controllers
 {
@@ -9,6 +10,7 @@ namespace BillPaymentProvider.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     [Produces("application/json")]
     public class BillerConfigController : ControllerBase
     {

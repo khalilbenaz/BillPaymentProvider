@@ -1,6 +1,7 @@
 ﻿using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 
 namespace BillPaymentProvider.Controllers
@@ -10,6 +11,7 @@ namespace BillPaymentProvider.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     [Produces("application/json")]
     public class PaymentController : ControllerBase
     {

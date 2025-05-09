@@ -37,6 +37,11 @@ namespace BillPaymentProvider.Data
         /// </summary>
         public DbSet<LogEntry> LogEntries { get; set; } = null!;
 
+        /// <summary>
+        /// Utilisateurs de l'application
+        /// </summary>
+        public DbSet<User> Users { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -79,6 +84,11 @@ namespace BillPaymentProvider.Data
             // LogEntry
             modelBuilder.Entity<LogEntry>()
                 .HasIndex(l => l.Level);
+
+            // User
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
         }
     }
 }
