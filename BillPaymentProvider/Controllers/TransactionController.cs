@@ -1,5 +1,6 @@
 ﻿using BillPaymentProvider.Core.Interfaces;
 using BillPaymentProvider.Core.Models;
+using BillPaymentProvider.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
@@ -16,10 +17,12 @@ namespace BillPaymentProvider.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionRepository _transactionRepository;
+        private readonly AuditLogger _auditLogger;
 
-        public TransactionController(ITransactionRepository transactionRepository)
+        public TransactionController(ITransactionRepository transactionRepository, AuditLogger auditLogger)
         {
             _transactionRepository = transactionRepository;
+            _auditLogger = auditLogger;
         }
 
         /// <summary>
@@ -28,10 +31,13 @@ namespace BillPaymentProvider.Controllers
         /// <param name="id">Identifiant unique de la transaction</param>
         /// <returns>Détails de la transaction</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Manager,User")]
         [ProducesResponseType(typeof(Transaction), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetTransaction(string id)
         {
+            _auditLogger.LogAction("Détail transaction", $"Id={id}");
+
             var transaction = await _transactionRepository.GetByTransactionIdAsync(id);
 
             if (transaction == null)
@@ -74,10 +80,13 @@ namespace BillPaymentProvider.Controllers
         /// <param name="id">Identifiant unique de la transaction</param>
         /// <returns>Liste des logs de la transaction</returns>
         [HttpGet("{id}/logs")]
+        [Authorize(Roles = "Admin,Manager,User")]
         [ProducesResponseType(typeof(List<TransactionLog>), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetTransactionLogs(string id)
         {
+            _auditLogger.LogAction("Logs transaction", $"Id={id}");
+
             var transaction = await _transactionRepository.GetByTransactionIdAsync(id);
 
             if (transaction == null)

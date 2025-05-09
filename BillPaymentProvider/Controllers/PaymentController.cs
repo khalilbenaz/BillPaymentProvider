@@ -1,5 +1,6 @@
 ﻿using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Services;
+using BillPaymentProvider.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
@@ -16,10 +17,12 @@ namespace BillPaymentProvider.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly PaymentService _paymentService;
+        private readonly AuditLogger _auditLogger;
 
-        public PaymentController(PaymentService paymentService)
+        public PaymentController(PaymentService paymentService, AuditLogger auditLogger)
         {
             _paymentService = paymentService;
+            _auditLogger = auditLogger;
         }
 
         /// <summary>
@@ -59,13 +62,15 @@ namespace BillPaymentProvider.Controllers
         [ProducesResponseType(typeof(List<B3gServiceResponse>), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
+        [Authorize(Roles = "Admin,Manager")] // Ex : seuls Admin et Manager peuvent payer
         public ActionResult<List<B3gServiceResponse>> Process([FromBody][Required] B3gServiceRequest request)
         {
             if (request == null || request.ParamIn == null)
             {
+                _auditLogger.LogAction("Paiement - ECHEC", "Requête invalide");
                 return BadRequest("Requête invalide");
             }
-
+            _auditLogger.LogAction("Paiement", $"SessionId={request.SessionId}, ServiceId={request.ServiceId}, UserName={request.UserName}");
             return _paymentService.Process(request);
         }
     }

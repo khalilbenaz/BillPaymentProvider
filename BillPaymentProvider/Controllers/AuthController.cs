@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using BillPaymentProvider.Services;
 using BillPaymentProvider.Core.Models;
+using BillPaymentProvider.Utils;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -30,10 +31,18 @@ namespace BillPaymentProvider.Controllers
             if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
                 return Unauthorized();
 
+            // Protection brute force
+            if (BruteForceProtection.IsLockedOut(request.Username))
+                return Unauthorized("Compte temporairement bloqué suite à trop de tentatives.");
+
             var user = await _userService.GetUserByUsernameAsync(request.Username);
             if (user == null || !_userService.VerifyPassword(request.Password, user.PasswordHash))
+            {
+                BruteForceProtection.RegisterFailedAttempt(request.Username);
                 return Unauthorized();
+            }
 
+            BruteForceProtection.ResetAttempts(request.Username);
             var token = GenerateJwtToken(user.Username, user.Role ?? "User");
             return Ok(new { token });
         }

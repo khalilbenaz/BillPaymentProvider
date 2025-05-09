@@ -10,6 +10,9 @@ using BillPaymentProvider.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using BillPaymentProvider.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,8 +44,16 @@ builder.Services.AddApplicationServices(builder.Configuration);
 // Injection du service UserService
 builder.Services.AddScoped<UserService>();
 
+// Injection de AuditLogger et IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<BillPaymentProvider.Utils.AuditLogger>();
+
 // Configurer CORS
 builder.Services.AddApplicationCors();
+
+// Configuration FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<B3gServiceRequestValidator>();
 
 // Configuration JWT (clé à personnaliser)
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "votre_cle_secrete_super_longue";

@@ -2,6 +2,7 @@
 using BillPaymentProvider.Data.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using BillPaymentProvider.Utils;
 
 namespace BillPaymentProvider.Controllers
 {
@@ -15,10 +16,12 @@ namespace BillPaymentProvider.Controllers
     public class BillerConfigController : ControllerBase
     {
         private readonly BillerRepository _billerRepository;
+        private readonly AuditLogger _auditLogger;
 
-        public BillerConfigController(BillerRepository billerRepository)
+        public BillerConfigController(BillerRepository billerRepository, AuditLogger auditLogger)
         {
             _billerRepository = billerRepository;
+            _auditLogger = auditLogger;
         }
 
         /// <summary>
@@ -26,9 +29,11 @@ namespace BillPaymentProvider.Controllers
         /// </summary>
         /// <returns>Liste des créanciers</returns>
         [HttpGet]
+        [Authorize(Roles = "Admin,Manager,User")]
         [ProducesResponseType(typeof(List<BillerConfiguration>), 200)]
         public async Task<IActionResult> GetAllBillers()
         {
+            _auditLogger.LogAction("Liste créanciers", "");
             var billers = await _billerRepository.GetAllAsync();
             return Ok(billers);
         }
@@ -39,10 +44,12 @@ namespace BillPaymentProvider.Controllers
         /// <param name="code">Code unique du créancier</param>
         /// <returns>Configuration du créancier</returns>
         [HttpGet("{code}")]
+        [Authorize(Roles = "Admin,Manager,User")]
         [ProducesResponseType(typeof(BillerConfiguration), 200)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetBillerByCode(string code)
         {
+            _auditLogger.LogAction("Détail créancier", $"BillerCode={code}");
             var biller = await _billerRepository.GetByCodeAsync(code);
 
             if (biller == null)

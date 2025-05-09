@@ -1,5 +1,6 @@
 ﻿using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Services;
+using BillPaymentProvider.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
@@ -16,10 +17,12 @@ namespace BillPaymentProvider.Controllers
     public class InquiryController : ControllerBase
     {
         private readonly PaymentService _paymentService;
+        private readonly AuditLogger _auditLogger;
 
-        public InquiryController(PaymentService paymentService)
+        public InquiryController(PaymentService paymentService, AuditLogger auditLogger)
         {
             _paymentService = paymentService;
+            _auditLogger = auditLogger;
         }
 
         /// <summary>
@@ -54,8 +57,11 @@ namespace BillPaymentProvider.Controllers
         [ProducesResponseType(typeof(object), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
+        [Authorize(Roles = "Admin,Manager,User")]
         public IActionResult Inquire([FromBody] Dictionary<string, object> request)
         {
+            _auditLogger.LogAction("Consultation facture/téléphone", $"Payload={System.Text.Json.JsonSerializer.Serialize(request)}");
+
             if (request == null)
             {
                 return BadRequest("Requête invalide");
@@ -175,8 +181,11 @@ namespace BillPaymentProvider.Controllers
         [HttpPost("inquire-multiple")]
         [ProducesResponseType(typeof(List<object>), 200)]
         [ProducesResponseType(400)]
+        [Authorize(Roles = "Admin,Manager,User")]
         public IActionResult InquireMultiple([FromBody] Dictionary<string, object> request)
         {
+            _auditLogger.LogAction("Consultation factures multiples", $"Payload={System.Text.Json.JsonSerializer.Serialize(request)}");
+
             if (request == null)
             {
                 return BadRequest("Requête invalide");
