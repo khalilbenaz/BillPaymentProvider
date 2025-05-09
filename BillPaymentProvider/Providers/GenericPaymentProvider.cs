@@ -2,6 +2,7 @@
 using BillPaymentProvider.Core.Interfaces;
 using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Data.Repositories;
+using BillPaymentProvider.Utils;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -39,7 +40,11 @@ namespace BillPaymentProvider.Providers
                 return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "BillerCode manquant");
             }
 
-            var billerCode = billerCodeObj.ToString();
+            var billerCode = billerCodeObj?.ToString() ?? string.Empty;
+            if (string.IsNullOrEmpty(billerCode))
+            {
+                return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "BillerCode manquant");
+            }
 
             // Récupérer la configuration du créancier
             var billerConfig = await _billerRepository.GetByCodeAsync(billerCode);
@@ -94,7 +99,11 @@ namespace BillPaymentProvider.Providers
                 return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "BillerCode manquant");
             }
 
-            var billerCode = billerCodeObj.ToString();
+            var billerCode = billerCodeObj?.ToString() ?? string.Empty;
+            if (string.IsNullOrEmpty(billerCode))
+            {
+                return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "BillerCode manquant");
+            }
 
             // Récupérer la configuration du créancier
             var billerConfig = await _billerRepository.GetByCodeAsync(billerCode);
@@ -159,7 +168,11 @@ namespace BillPaymentProvider.Providers
                 return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "TransactionId manquant");
             }
 
-            var transactionId = transactionIdObj.ToString();
+            var transactionId = transactionIdObj?.ToString() ?? string.Empty;
+            if (string.IsNullOrEmpty(transactionId))
+            {
+                return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "TransactionId manquant");
+            }
 
             try
             {
@@ -287,6 +300,18 @@ namespace BillPaymentProvider.Providers
         }
 
         #region Private Methods
+
+        /// <summary>
+        /// Détecte la langue de la requête
+        /// </summary>
+        private string GetLang(B3gServiceRequest request)
+        {
+            if (!string.IsNullOrEmpty(request.Language))
+                return request.Language.ToLower();
+            if (request.ParamIn != null && request.ParamIn.TryGetValue("Language", out var langObj) && langObj != null && !string.IsNullOrEmpty(langObj.ToString()))
+                return langObj.ToString().ToLower();
+            return "fr";
+        }
 
         /// <summary>
         /// Traite une demande d'information pour une facture
@@ -654,12 +679,13 @@ namespace BillPaymentProvider.Providers
         /// </summary>
         private B3gServiceResponse CreateErrorResponse(B3gServiceRequest request, string statusCode, string statusLabel)
         {
+            var lang = GetLang(request);
             return new B3gServiceResponse
             {
                 SessionId = request.SessionId,
                 ServiceId = request.ServiceId,
                 StatusCode = statusCode,
-                StatusLabel = statusLabel,
+                StatusLabel = LocalizationHelper.GetMessage(statusCode, lang) + (statusLabel != null && statusLabel != LocalizationHelper.GetMessage(statusCode, lang) ? $" - {statusLabel}" : ""),
                 ParamOut = new { ErrorMessage = statusLabel }
             };
         }
