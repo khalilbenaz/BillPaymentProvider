@@ -12,6 +12,7 @@ Une API complète de simulation de paiements de factures et de recharges téléc
 * [Créanciers disponibles](#-créanciers-disponibles)
 * [Notes importantes](#-notes-importantes)
 * [Development](#-development)
+* [Sécurité et bonnes pratiques](#-sécurité-et-bonnes-pratiques)
 
 ## 🚀 Installation
 
@@ -700,3 +701,58 @@ dotnet test
 ```
 
 Développé avec ❤️ pour simuler le système de paiement de factures et recharges télécom en Égypte.
+
+## 🔒 Sécurité et bonnes pratiques
+
+- **Authentification JWT** : endpoints sécurisés, génération de token via `/api/auth/login` (admin/admin, user/user, manager/manager après initialisation).
+- **Gestion avancée des rôles** : accès restreint par [Authorize(Roles = ...)] sur chaque endpoint (Admin, Manager, User).
+- **Validation avancée** : FluentValidation sur les entrées (ex : B3gServiceRequest, LoginRequest).
+- **Protection brute force** : blocage temporaire du login après plusieurs tentatives échouées.
+- **Audit et traçabilité** : toutes les actions sensibles sont tracées dans la table `LogEntries` (utilisateur, IP, action, détails).
+- **CORS restrictif** : seules les origines explicitement listées dans `Program.cs` sont autorisées (ex : http://localhost:5163).
+- **Hashage sécurisé des mots de passe** : SHA256 (à améliorer en production).
+- **Durée de vie des tokens JWT** : configurable (par défaut 30 minutes) dans `appsettings.json`.
+- **Headers de sécurité HTTP** : ajoutés automatiquement à chaque réponse.
+
+## 🛠️ Initialisation des utilisateurs
+
+Lors de la première exécution, les utilisateurs suivants sont créés :
+- admin / admin (rôle Admin)
+- user / user (rôle User)
+- manager / manager (rôle Manager)
+
+Les mots de passe sont stockés hashés (SHA256).
+
+## 🔑 Utilisation de l’authentification dans Swagger
+
+1. Utilisez `/api/auth/login` pour obtenir un token JWT.
+2. Cliquez sur le bouton "Authorize" dans Swagger et collez :
+   `Bearer {votre_token}`
+3. Tous les endpoints sécurisés deviennent accessibles selon votre rôle.
+
+## 📝 Exemple de configuration CORS
+
+Dans `Program.cs` :
+```csharp
+policy.WithOrigins(
+    "http://localhost:5000",
+    "http://localhost:5173",
+    "http://localhost:5163",
+    "http://localhost"
+)
+.AllowAnyHeader()
+.AllowAnyMethod();
+```
+
+## 📝 Exemple de configuration JWT
+
+Dans `appsettings.json` :
+```json
+"Jwt": {
+  "Key": "votre_cle_secrete_super_longue_a_personnaliser",
+  "Issuer": "BillPaymentProvider",
+  "LifetimeMinutes": 30
+}
+```
+
+---
