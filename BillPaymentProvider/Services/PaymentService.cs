@@ -430,6 +430,27 @@ namespace BillPaymentProvider.Services
                     paymentRequest.ParamIn.Add("CustomerReference", payment["CustomerReference"]);
                 }
 
+                // Mode sandbox : simulation de paiement
+                if (request.IsDemo == 1)
+                {
+                    var simulatedResponse = new B3gServiceResponse
+                    {
+                        SessionId = paymentRequest.SessionId,
+                        ServiceId = paymentRequest.ServiceId,
+                        StatusCode = StatusCodes.SUCCESS,
+                        StatusLabel = "Paiement simulé (sandbox)",
+                        ParamOut = new
+                        {
+                            TransactionId = Guid.NewGuid().ToString(),
+                            Payment = payment,
+                            Simulated = true,
+                            Message = "Aucune opération réelle effectuée. Ceci est une simulation sandbox."
+                        }
+                    };
+                    responses.Add(simulatedResponse);
+                    continue;
+                }
+
                 // Ajouter les autres paramètres spécifiques
                 foreach (var param in payment)
                 {
