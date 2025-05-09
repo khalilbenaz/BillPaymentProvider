@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using BillPaymentProvider.Services;
@@ -25,6 +26,7 @@ namespace BillPaymentProvider.Controllers
             _userService = userService;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
@@ -51,6 +53,7 @@ namespace BillPaymentProvider.Controllers
         {
             var jwtKey = _configuration["Jwt:Key"] ?? string.Empty;
             var jwtIssuer = _configuration["Jwt:Issuer"];
+            var jwtLifetimeMinutes = int.TryParse(_configuration["Jwt:LifetimeMinutes"], out var l) ? l : 30;
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
@@ -65,7 +68,7 @@ namespace BillPaymentProvider.Controllers
                 issuer: jwtIssuer,
                 audience: null,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
+                expires: DateTime.UtcNow.AddMinutes(jwtLifetimeMinutes),
                 signingCredentials: credentials
             );
 

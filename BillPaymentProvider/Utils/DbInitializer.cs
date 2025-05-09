@@ -2,6 +2,7 @@
 using BillPaymentProvider.Core.Interfaces;
 using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Data;
+using BillPaymentProvider.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -59,19 +60,19 @@ namespace BillPaymentProvider.Utils
                     context.Users.Add(new User
                     {
                         Username = "admin",
-                        PasswordHash = "admin", // À remplacer par un hash sécurisé en prod
+                        PasswordHash = UserService.HashPassword("admin"),
                         Role = "Admin"
                     });
                     context.Users.Add(new User
                     {
                         Username = "user",
-                        PasswordHash = "user",
+                        PasswordHash = UserService.HashPassword("user"),
                         Role = "User"
                     });
                     context.Users.Add(new User
                     {
                         Username = "manager",
-                        PasswordHash = "manager",
+                        PasswordHash = UserService.HashPassword("manager"),
                         Role = "Manager"
                     });
                     context.SaveChanges();

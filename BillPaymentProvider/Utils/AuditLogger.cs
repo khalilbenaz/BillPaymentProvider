@@ -19,7 +19,9 @@ namespace BillPaymentProvider.Utils
 
         public void LogAction(string action, string details)
         {
-            var user = _httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "anonymous";
+            var user = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? _httpContextAccessor.HttpContext?.User?.Identity?.Name
+                ?? "anonymous";
             var ip = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "unknown";
             _logger.LogInfo($"[AUDIT] {DateTime.UtcNow:u} | User: {user} | IP: {ip} | Action: {action} | Details: {details}");
         }

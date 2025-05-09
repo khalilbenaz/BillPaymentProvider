@@ -1,6 +1,8 @@
 using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BillPaymentProvider.Services
@@ -20,8 +22,16 @@ namespace BillPaymentProvider.Services
 
         public bool VerifyPassword(string password, string passwordHash)
         {
-            // Pour la démo : comparaison simple (à remplacer par un vrai hashage sécurisé)
-            return password == passwordHash;
+            // Comparaison avec hash sécurisé
+            return HashPassword(password) == passwordHash;
+        }
+
+        public static string HashPassword(string password)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(password);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
         }
     }
 }

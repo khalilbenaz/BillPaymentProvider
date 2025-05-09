@@ -1,6 +1,7 @@
 ﻿using BillPaymentProvider.Core.Enums;
 using BillPaymentProvider.Core.Models;
 using BillPaymentProvider.Data;
+using BillPaymentProvider.Services;
 using System.Text.Json;
 
 namespace BillPaymentProvider.Utils
@@ -40,19 +41,19 @@ namespace BillPaymentProvider.Utils
                 _dbContext.Users.Add(new User
                 {
                     Username = "admin",
-                    PasswordHash = "admin",
+                    PasswordHash = UserService.HashPassword("admin"),
                     Role = "Admin"
                 });
                 _dbContext.Users.Add(new User
                 {
                     Username = "user",
-                    PasswordHash = "user",
+                    PasswordHash = UserService.HashPassword("user"),
                     Role = "User"
                 });
                 _dbContext.Users.Add(new User
                 {
                     Username = "manager",
-                    PasswordHash = "manager",
+                    PasswordHash = UserService.HashPassword("manager"),
                     Role = "Manager"
                 });
                 _dbContext.SaveChanges();

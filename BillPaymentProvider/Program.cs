@@ -50,6 +50,20 @@ builder.Services.AddScoped<BillPaymentProvider.Utils.AuditLogger>();
 
 // Configurer CORS
 builder.Services.AddApplicationCors();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("RestrictedCors", policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:5000",
+            "http://localhost:5173",
+            "http://localhost:5163",
+            "http://localhost"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
 
 // Configuration FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -58,6 +72,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<B3gServiceRequestValidator>
 // Configuration JWT (clé à personnaliser)
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "votre_cle_secrete_super_longue";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "BillPaymentProvider";
+var jwtLifetimeMinutes = int.TryParse(builder.Configuration["Jwt:LifetimeMinutes"], out var l) ? l : 30;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -73,8 +88,10 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.Zero // Pas de tolérance
     };
+    options.SaveToken = true;
 });
 
 var app = builder.Build();
@@ -95,7 +112,7 @@ app.UseMiddleware<IdempotencyMiddleware>();
 app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseHttpsRedirection();
-app.UseCors();
+app.UseCors("RestrictedCors");
 app.UseAuthentication(); // Ajout de l'authentification
 app.UseAuthorization();
 app.MapControllers();
