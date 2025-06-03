@@ -72,6 +72,10 @@ namespace BillPaymentProvider.Providers
                 {
                     return await InquireBill(request, billerConfig);
                 }
+                else if (billerConfig.ServiceType == ServiceType.SUBSCRIPTION_PAYMENT)
+                {
+                    return await InquireSubscription(request, billerConfig);
+                }
                 else if (billerConfig.ServiceType == ServiceType.TELECOM_RECHARGE)
                 {
                     return await InquireTelecom(request, billerConfig);
@@ -140,6 +144,10 @@ namespace BillPaymentProvider.Providers
                 if (billerConfig.ServiceType == ServiceType.BILL_PAYMENT)
                 {
                     return await ProcessBillPayment(request, billerConfig);
+                }
+                else if (billerConfig.ServiceType == ServiceType.SUBSCRIPTION_PAYMENT)
+                {
+                    return await ProcessSubscriptionPayment(request, billerConfig);
                 }
                 else if (billerConfig.ServiceType == ServiceType.TELECOM_RECHARGE)
                 {
@@ -366,6 +374,58 @@ namespace BillPaymentProvider.Providers
         }
 
         /// <summary>
+        /// Traite une demande d'information pour un abonnement
+        /// </summary>
+        private async Task<B3gServiceResponse> InquireSubscription(B3gServiceRequest request, BillerConfiguration billerConfig)
+        {
+            // Validation des paramètres
+            if (!request.ParamIn.TryGetValue("CustomerReference", out var customerRefObj))
+            {
+                return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "CustomerReference manquant");
+            }
+
+            var customerRef = customerRefObj.ToString();
+
+            // Valider le format de référence client si configuré
+            if (!string.IsNullOrEmpty(billerConfig.CustomerReferenceFormat) &&
+                !Regex.IsMatch(customerRef, billerConfig.CustomerReferenceFormat))
+            {
+                return CreateErrorResponse(
+                    request,
+                    BillPaymentProvider.Core.Constants.StatusCodes.INVALID_REFERENCE,
+                    "Format de référence client invalide");
+            }
+
+            // Simuler un abonnement
+            var monthlyFee = GenerateRandomAmount(5, 50);
+            var nextPayment = DateTime.UtcNow.AddDays(_random.Next(5, 30));
+            var customerName = GenerateRandomCustomerName();
+            var plans = new[] { "Basic", "Standard", "Premium" };
+            var planName = plans[_random.Next(plans.Length)];
+
+            var response = new B3gServiceResponse
+            {
+                SessionId = request.SessionId,
+                ServiceId = request.ServiceId,
+                StatusCode = BillPaymentProvider.Core.Constants.StatusCodes.SUCCESS,
+                StatusLabel = "Abonnement trouvé",
+                ParamOut = new
+                {
+                    BillerCode = billerConfig.BillerCode,
+                    BillerName = billerConfig.BillerName,
+                    CustomerReference = customerRef,
+                    CustomerName = customerName,
+                    PlanName = planName,
+                    MonthlyFee = monthlyFee,
+                    NextPaymentDate = nextPayment.ToString("yyyy-MM-dd"),
+                    SubscriptionId = GenerateRandomBillNumber()
+                }
+            };
+
+            return response;
+        }
+
+        /// <summary>
         /// Traite une demande d'information pour une recharge télécom
         /// </summary>
         private async Task<B3gServiceResponse> InquireTelecom(B3gServiceRequest request, BillerConfiguration billerConfig)
@@ -501,6 +561,99 @@ namespace BillPaymentProvider.Providers
             await _transactionRepository.UpdateAsync(transaction);
 
             _logger.LogInfo($"Paiement simulé avec succès pour {billerConfig.BillerCode}, Référence: {customerRef}, Montant: {amount}");
+            return response;
+        }
+
+        /// <summary>
+        /// Traite le paiement d'un abonnement
+        /// </summary>
+        private async Task<B3gServiceResponse> ProcessSubscriptionPayment(B3gServiceRequest request, BillerConfiguration billerConfig)
+        {
+            // Validation des paramètres
+            if (!request.ParamIn.TryGetValue("CustomerReference", out var customerRefObj))
+            {
+                return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.MISSING_PARAMETER, "CustomerReference manquant");
+            }
+
+            if (!request.ParamIn.TryGetValue("Amount", out var amountObj) ||
+                !decimal.TryParse(amountObj.ToString(), out var amount))
+            {
+                return CreateErrorResponse(request, BillPaymentProvider.Core.Constants.StatusCodes.INVALID_AMOUNT, "Montant invalide ou manquant");
+            }
+
+            var subscriptionId = request.ParamIn.TryGetValue("SubscriptionId", out var subIdObj)
+                ? subIdObj?.ToString() ?? string.Empty
+                : GenerateRandomBillNumber();
+
+            var customerRef = customerRefObj.ToString();
+
+            // Valider le format de référence client si configuré
+            if (!string.IsNullOrEmpty(billerConfig.CustomerReferenceFormat) &&
+                !Regex.IsMatch(customerRef, billerConfig.CustomerReferenceFormat))
+            {
+                return CreateErrorResponse(
+                    request,
+                    BillPaymentProvider.Core.Constants.StatusCodes.INVALID_REFERENCE,
+                    "Format de référence client invalide");
+            }
+
+            // Créer une nouvelle transaction
+            var transactionId = Guid.NewGuid().ToString("N");
+            var receiptNumber = GenerateReceiptNumber();
+
+            var transaction = new Transaction
+            {
+                TransactionId = transactionId,
+                BillerCode = billerConfig.BillerCode,
+                CustomerReference = customerRef,
+                Amount = amount,
+                Status = TransactionStatus.COMPLETED,
+                SessionId = request.SessionId,
+                ServiceId = request.ServiceId,
+                ChannelId = request.ChannelId ?? PaymentChannel.API,
+                ReceiptNumber = receiptNumber,
+                CreatedAt = DateTime.UtcNow,
+                CompletedAt = DateTime.UtcNow,
+                RawRequest = JsonSerializer.Serialize(request)
+            };
+
+            await _transactionRepository.CreateAsync(transaction);
+
+            var logEntry = new TransactionLog
+            {
+                TransactionId = transactionId,
+                Action = "PAYMENT",
+                Details = $"Abonnement {billerConfig.BillerCode} pour {customerRef} montant {amount}",
+                NewStatus = TransactionStatus.COMPLETED,
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _transactionRepository.LogTransactionEventAsync(logEntry);
+
+            var response = new B3gServiceResponse
+            {
+                SessionId = request.SessionId,
+                ServiceId = request.ServiceId,
+                StatusCode = BillPaymentProvider.Core.Constants.StatusCodes.SUCCESS,
+                StatusLabel = $"Paiement {billerConfig.BillerName} effectué avec succès",
+                ParamOut = new
+                {
+                    TransactionId = transactionId,
+                    ReceiptNumber = receiptNumber,
+                    CustomerReference = customerRef,
+                    SubscriptionId = subscriptionId,
+                    BillerCode = billerConfig.BillerCode,
+                    BillerName = billerConfig.BillerName,
+                    Amount = amount,
+                    PaymentDate = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Status = TransactionStatus.COMPLETED
+                }
+            };
+
+            transaction.RawResponse = JsonSerializer.Serialize(response);
+            await _transactionRepository.UpdateAsync(transaction);
+
+            _logger.LogInfo($"Paiement d'abonnement simulé avec succès pour {billerConfig.BillerCode}, Référence: {customerRef}, Montant: {amount}");
             return response;
         }
 

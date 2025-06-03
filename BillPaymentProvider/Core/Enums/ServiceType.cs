@@ -14,5 +14,10 @@
         /// Recharge télécom
         /// </summary>
         public const string TELECOM_RECHARGE = "TELECOM_RECHARGE";
+
+        /// <summary>
+        /// Paiement d'abonnement (services récurrents)
+        /// </summary>
+        public const string SUBSCRIPTION_PAYMENT = "SUBSCRIPTION_PAYMENT";
     }
 }

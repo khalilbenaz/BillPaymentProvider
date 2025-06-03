@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 namespace BillPaymentProvider.Controllers
 {
     /// <summary>
-    /// Contrôleur pour tous types de paiements (factures et recharges)
+    /// Contrôleur pour tous types de paiements (factures, abonnements et recharges)
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
@@ -30,8 +30,8 @@ namespace BillPaymentProvider.Controllers
         /// </summary>
         /// <remarks>
         /// Cette méthode traite différentes opérations selon le paramètre "Operation" :
-        /// - INQUIRE : Interrogation des informations (facture ou téléphone)
-        /// - PAY : Paiement de facture ou recharge télécom
+        /// - INQUIRE : Interrogation des informations (facture, abonnement ou téléphone)
+        /// - PAY : Paiement de facture, d'abonnement ou recharge télécom
         /// - STATUS : Vérification du statut d'une transaction
         /// - CANCEL : Annulation d'une transaction
         /// 

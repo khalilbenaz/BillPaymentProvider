@@ -52,6 +52,7 @@ http://localhost:5163/
 ## ✨ Fonctionnalités
 
 * **Paiement de factures** pour divers services (électricité, eau, gaz, téléphone...)
+* **Paiement d'abonnements** (services en ligne, magazines, etc.)
 * **Recharges télécom** pour différents opérateurs
 * **Support multi-facturier** configurable via base de données
 * **Consultation de factures** multiples pour un client
@@ -435,7 +436,109 @@ POST /api/Payment/process
 - `AvailableAmounts` liste les montants de recharge possibles.
 - `MinAmount` et `MaxAmount` définissent les limites.
 
-### 6. Recharge téléphonique (PAY pour recharge)
+### 6. Consultation d'un abonnement (INQUIRE pour abonnement)
+
+Vérifie les informations d'un abonnement récurrent.
+
+#### Requête
+
+```json
+POST /api/Payment/process
+{
+  "SessionId": "sub-check-12345678",
+  "ServiceId": "subscription_payment",
+  "UserName": "test_user",
+  "Password": "test_password",
+  "Language": "fr",
+  "ChannelId": "WEB",
+  "IsDemo": 1,
+  "ParamIn": {
+    "Operation": "INQUIRE",
+    "BillerCode": "EGY-STREAM",
+    "CustomerReference": "SUB12345"
+  }
+}
+```
+
+#### Réponse
+
+```json
+{
+  "SessionId": "sub-check-12345678",
+  "ServiceId": "subscription_payment",
+  "StatusCode": "000",
+  "StatusLabel": "Abonnement trouvé",
+  "ParamOut": {
+    "BillerCode": "EGY-STREAM",
+    "BillerName": "Streaming Plus",
+    "CustomerReference": "SUB12345",
+    "CustomerName": "Ahmed Mohamed",
+    "PlanName": "Standard",
+    "MonthlyFee": 15.99,
+    "NextPaymentDate": "2025-05-20",
+    "SubscriptionId": "INV202505150001"
+  }
+}
+```
+
+**Explication**:
+- Détaille un abonnement existant avant paiement.
+- `PlanName` et `MonthlyFee` informent sur l'offre.
+- `NextPaymentDate` indique la prochaine échéance.
+
+### 7. Paiement d'un abonnement (PAY)
+
+Effectue le paiement d'un abonnement récurrent.
+
+#### Requête
+
+```json
+POST /api/Payment/process
+{
+  "SessionId": "sub-pay-12345678",
+  "ServiceId": "subscription_payment",
+  "UserName": "test_user",
+  "Password": "test_password",
+  "Language": "fr",
+  "ChannelId": "WEB",
+  "IsDemo": 1,
+  "ParamIn": {
+    "Operation": "PAY",
+    "BillerCode": "EGY-STREAM",
+    "CustomerReference": "SUB12345",
+    "SubscriptionId": "INV202505150001",
+    "Amount": 15.99
+  }
+}
+```
+
+#### Réponse
+
+```json
+{
+  "SessionId": "sub-pay-12345678",
+  "ServiceId": "subscription_payment",
+  "StatusCode": "000",
+  "StatusLabel": "Paiement Streaming Plus effectué avec succès",
+  "ParamOut": {
+    "TransactionId": "abc123ef456",
+    "ReceiptNumber": "REC202505150030",
+    "CustomerReference": "SUB12345",
+    "SubscriptionId": "INV202505150001",
+    "BillerCode": "EGY-STREAM",
+    "BillerName": "Streaming Plus",
+    "Amount": 15.99,
+    "PaymentDate": "2025-05-20 14:30:00",
+    "Status": "COMPLETED"
+  }
+}
+```
+
+**Explication**:
+- Confirme le paiement de l'abonnement.
+- `SubscriptionId` permet de suivre l'échéance payée.
+
+### 8. Recharge téléphonique (PAY pour recharge)
 
 Effectue une recharge téléphonique.
 
@@ -490,7 +593,7 @@ POST /api/Payment/process
 - `TransactionId` et `ReceiptNumber` pour suivi.
 - `RechargeDate` indique la date de traitement.
 
-### 7. Vérification du statut d'une transaction (STATUS)
+### 9. Vérification du statut d'une transaction (STATUS)
 
 Vérifie l'état d'une transaction existante.
 
@@ -541,7 +644,7 @@ POST /api/Payment/process
 - Fournit le statut (`COMPLETED`) et les détails de la transaction.
 - `CreatedAt` et `CompletedAt` indiquent les dates clés.
 
-### 8. Annulation d'une transaction (CANCEL)
+### 10. Annulation d'une transaction (CANCEL)
 
 Tente d'annuler une transaction existante.
 
@@ -608,7 +711,7 @@ POST /api/Payment/process
 - Indique un échec avec `StatusCode: "206"`.
 - `ErrorMessage` explique la raison.
 
-### 9. Idempotence (requête dupliquée)
+### 11. Idempotence (requête dupliquée)
 
 - Si une requête est envoyée plusieurs fois avec le même `SessionId`, le système retourne la même réponse sans exécuter l'opération à nouveau.
 - **Point clé**: Assurez-vous que chaque nouvelle transaction utilise un `SessionId` unique.
@@ -640,6 +743,8 @@ POST /api/Payment/process
 | EGY-GAS         | Gaz d'Égypte                | Paiement des factures de gaz            |
 | EGY-TELECOM     | Télécom Égypte              | Paiement des factures de téléphone fixe |
 | EGY-INTERNET    | Internet Égypte             | Paiement des factures internet          |
+| EGY-METRO       | Métro du Caire              | Recharge des cartes de métro            |
+| EGY-TAX         | Impôts d'Égypte             | Paiement des taxes gouvernementales     |
 
 ### Recharges télécom
 
@@ -649,6 +754,13 @@ POST /api/Payment/process
 | EGY-VODAFONE | Vodafone Égypte | 010, 011                |
 | EGY-ETISALAT | Etisalat Égypte | 011, 015                |
 | EGY-WE       | WE Égypte       | 015                     |
+
+### Abonnements
+
+| Code       | Nom            | Description                                |
+| ---------- | -------------- | ------------------------------------------ |
+| EGY-STREAM | Streaming Plus | Paiement des abonnements Streaming Plus    |
+| EGY-SAT    | Satellite TV Égypte | Paiement des abonnements satellite |
 
 ## ⚠️ Notes importantes
 

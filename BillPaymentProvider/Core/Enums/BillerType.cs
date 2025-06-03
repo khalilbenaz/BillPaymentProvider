@@ -39,5 +39,20 @@
         /// Opérateur télécom mobile
         /// </summary>
         public const string TELECOM = "TELECOM";
+
+        /// <summary>
+        /// Services de transport (ex. métro, bus)
+        /// </summary>
+        public const string TRANSPORT = "TRANSPORT";
+
+        /// <summary>
+        /// Chaînes de télévision ou services satellite
+        /// </summary>
+        public const string TELEVISION = "TELEVISION";
+
+        /// <summary>
+        /// Services gouvernementaux (impôts, amendes...)
+        /// </summary>
+        public const string GOVERNMENT = "GOVERNMENT";
     }
 }

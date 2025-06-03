@@ -190,6 +190,82 @@ namespace BillPaymentProvider.Utils
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             },
+            new BillerConfiguration
+            {
+                BillerCode = "EGY-STREAM",
+                BillerName = "Streaming Plus",
+                Description = "Paiement des abonnements Streaming Plus",
+                Category = BillerType.SUBSCRIPTION,
+                ServiceType = ServiceType.SUBSCRIPTION_PAYMENT,
+                CustomerReferenceFormat = "^[A-Z0-9]{6,12}$",
+                SpecificParams = JsonSerializer.Serialize(new
+                {
+                    fixedFee = 2.0,
+                    paymentDays = "1-30"
+                }),
+                SimulateRandomErrors = true,
+                ErrorRate = 3,
+                ProcessingDelay = 400,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new BillerConfiguration
+            {
+                BillerCode = "EGY-METRO",
+                BillerName = "Métro du Caire",
+                Description = "Recharge des cartes de métro",
+                Category = BillerType.TRANSPORT,
+                ServiceType = ServiceType.BILL_PAYMENT,
+                CustomerReferenceFormat = "^MET[0-9]{6,10}$",
+                SpecificParams = JsonSerializer.Serialize(new
+                {
+                    fixedFee = 0.5,
+                    paymentDays = "1-31"
+                }),
+                SimulateRandomErrors = true,
+                ErrorRate = 2,
+                ProcessingDelay = 300,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new BillerConfiguration
+            {
+                BillerCode = "EGY-SAT",
+                BillerName = "Satellite TV Égypte",
+                Description = "Paiement des abonnements satellite",
+                Category = BillerType.TELEVISION,
+                ServiceType = ServiceType.SUBSCRIPTION_PAYMENT,
+                CustomerReferenceFormat = "^SAT[0-9]{7,9}$",
+                SpecificParams = JsonSerializer.Serialize(new
+                {
+                    fixedFee = 1.5,
+                    paymentDays = "1-30"
+                }),
+                SimulateRandomErrors = true,
+                ErrorRate = 3,
+                ProcessingDelay = 350,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new BillerConfiguration
+            {
+                BillerCode = "EGY-TAX",
+                BillerName = "Impôts d'Égypte",
+                Description = "Paiement des taxes gouvernementales",
+                Category = BillerType.GOVERNMENT,
+                ServiceType = ServiceType.BILL_PAYMENT,
+                CustomerReferenceFormat = "^TAX[0-9]{8,12}$",
+                SpecificParams = JsonSerializer.Serialize(new
+                {
+                    fixedFee = 2.5,
+                    paymentDays = "1-31"
+                }),
+                SimulateRandomErrors = true,
+                ErrorRate = 4,
+                ProcessingDelay = 500,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
             
             // Facturiers pour recharges télécom
             new BillerConfiguration
