@@ -78,10 +78,8 @@ namespace BillPaymentProvider.Extensions
                 .AddJsonOptions(options => {
                     options.JsonSerializerOptions.PropertyNamingPolicy = null; // Garder les noms de propriétés tels quels
                 });
-        }
-
-        /// <summary>
-        /// Configure Swagger UI
+        }        /// <summary>
+        /// Configure Swagger UI avec personnalisation avancée
         /// </summary>
         public static void UseSwaggerWithUI(this IApplicationBuilder app)
         {
@@ -93,6 +91,19 @@ namespace BillPaymentProvider.Extensions
                 c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
                 c.DefaultModelsExpandDepth(-1); // Cacher les modèles par défaut
                 c.DisplayRequestDuration(); // Afficher la durée des requêtes
+                c.EnableDeepLinking(); // Permettre les liens profonds
+                c.DisplayOperationId(); // Afficher l'ID des opérations
+                c.DefaultModelRendering(Swashbuckle.AspNetCore.SwaggerUI.ModelRendering.Example);
+                c.EnableValidator(); // Activer le validateur JSON
+                c.ShowExtensions(); // Montrer les extensions
+                c.EnableFilter(); // Activer le filtre de recherche
+                c.MaxDisplayedTags(50); // Nombre max de tags affichés
+                  // Personnalisation CSS pour un meilleur look
+                c.InjectStylesheet("/swagger-ui/custom.css");
+                
+                // Configuration simple pour éviter les problèmes de sérialisation
+                c.ConfigObject.AdditionalItems.Add("syntaxHighlight", true);
+                c.ConfigObject.AdditionalItems.Add("tryItOutEnabled", true);
             });
         }
     }
@@ -218,16 +229,16 @@ namespace BillPaymentProvider.Extensions
                 {
                     // Exemple de requête pour le paiement
                     operation.RequestBody.Content["application/json"].Examples = new Dictionary<string, OpenApiExample>
-                    {
-                        ["Paiement d'électricité"] = new OpenApiExample
+                    {                        ["Paiement d'électricité"] = new OpenApiExample
                         {
-                            Summary = "Paiement de facture d'électricité",
+                            Summary = "💡 Paiement de facture d'électricité",
+                            Description = "Exemple complet pour payer une facture d'électricité avec tous les paramètres requis",
                             Value = new OpenApiObject
                             {
                                 ["SessionId"] = new OpenApiString("12345678-1234-1234-1234-123456789012"),
                                 ["ServiceId"] = new OpenApiString("bill_payment"),
-                                ["UserName"] = new OpenApiString("test_user"),
-                                ["Password"] = new OpenApiString("test_password"),
+                                ["UserName"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
                                 ["Language"] = new OpenApiString("fr"),
                                 ["ChannelId"] = new OpenApiString("WEB"),
                                 ["IsDemo"] = new OpenApiInteger(1),
@@ -236,19 +247,22 @@ namespace BillPaymentProvider.Extensions
                                     ["Operation"] = new OpenApiString("PAY"),
                                     ["BillerCode"] = new OpenApiString("EGY-ELECTRICITY"),
                                     ["CustomerReference"] = new OpenApiString("123456789"),
-                                    ["Amount"] = new OpenApiDouble(150.75)
+                                    ["Amount"] = new OpenApiDouble(150.75),
+                                    ["BillNumber"] = new OpenApiString("ELEC-2025-001234"),
+                                    ["PaymentReference"] = new OpenApiString("PAY-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
                                 }
                             }
                         },
-                        ["Recharge télécom"] = new OpenApiExample
+                        ["Recharge télécom Orange"] = new OpenApiExample
                         {
-                            Summary = "Recharge téléphonique Orange",
+                            Summary = "📱 Recharge téléphonique Orange",
+                            Description = "Recharge de crédit téléphonique pour un numéro Orange Égypte",
                             Value = new OpenApiObject
                             {
                                 ["SessionId"] = new OpenApiString("12345678-1234-1234-1234-123456789012"),
                                 ["ServiceId"] = new OpenApiString("telecom_recharge"),
-                                ["UserName"] = new OpenApiString("test_user"),
-                                ["Password"] = new OpenApiString("test_password"),
+                                ["UserName"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
                                 ["Language"] = new OpenApiString("fr"),
                                 ["ChannelId"] = new OpenApiString("MOBILE"),
                                 ["IsDemo"] = new OpenApiInteger(1),
@@ -257,19 +271,93 @@ namespace BillPaymentProvider.Extensions
                                     ["Operation"] = new OpenApiString("PAY"),
                                     ["BillerCode"] = new OpenApiString("EGY-ORANGE"),
                                     ["PhoneNumber"] = new OpenApiString("0101234567"),
-                                    ["Amount"] = new OpenApiDouble(100)
+                                    ["Amount"] = new OpenApiDouble(100),
+                                    ["RechargeType"] = new OpenApiString("CREDIT"),
+                                    ["PaymentReference"] = new OpenApiString("ORANGE-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
                                 }
                             }
                         },
-                        ["Paiement multiple"] = new OpenApiExample
+                        ["Recharge télécom Vodafone"] = new OpenApiExample
                         {
-                            Summary = "Paiement de plusieurs factures",
+                            Summary = "📱 Recharge téléphonique Vodafone",
+                            Description = "Recharge de crédit téléphonique pour un numéro Vodafone Égypte",
+                            Value = new OpenApiObject
+                            {
+                                ["SessionId"] = new OpenApiString("12345678-1234-1234-1234-123456789012"),
+                                ["ServiceId"] = new OpenApiString("telecom_recharge"),
+                                ["UserName"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
+                                ["Language"] = new OpenApiString("fr"),
+                                ["ChannelId"] = new OpenApiString("MOBILE"),
+                                ["IsDemo"] = new OpenApiInteger(1),
+                                ["ParamIn"] = new OpenApiObject
+                                {
+                                    ["Operation"] = new OpenApiString("PAY"),
+                                    ["BillerCode"] = new OpenApiString("EGY-VODAFONE"),
+                                    ["PhoneNumber"] = new OpenApiString("0121234567"),
+                                    ["Amount"] = new OpenApiDouble(50),
+                                    ["RechargeType"] = new OpenApiString("CREDIT"),
+                                    ["PaymentReference"] = new OpenApiString("VODAFONE-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
+                                }
+                            }
+                        },
+                        ["Paiement facture d'eau"] = new OpenApiExample
+                        {
+                            Summary = "💧 Paiement de facture d'eau",
+                            Description = "Paiement d'une facture du service des eaux égyptien",
                             Value = new OpenApiObject
                             {
                                 ["SessionId"] = new OpenApiString("12345678-1234-1234-1234-123456789012"),
                                 ["ServiceId"] = new OpenApiString("bill_payment"),
-                                ["UserName"] = new OpenApiString("test_user"),
-                                ["Password"] = new OpenApiString("test_password"),
+                                ["UserName"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
+                                ["Language"] = new OpenApiString("fr"),
+                                ["ChannelId"] = new OpenApiString("WEB"),
+                                ["IsDemo"] = new OpenApiInteger(1),
+                                ["ParamIn"] = new OpenApiObject
+                                {
+                                    ["Operation"] = new OpenApiString("PAY"),
+                                    ["BillerCode"] = new OpenApiString("EGY-WATER"),
+                                    ["CustomerReference"] = new OpenApiString("AB123456"),
+                                    ["Amount"] = new OpenApiDouble(75.50),
+                                    ["BillNumber"] = new OpenApiString("WATER-2025-005678"),
+                                    ["PaymentReference"] = new OpenApiString("WATER-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
+                                }
+                            }
+                        },
+                        ["Paiement facture de gaz"] = new OpenApiExample
+                        {
+                            Summary = "🔥 Paiement de facture de gaz",
+                            Description = "Paiement d'une facture de gaz naturel égyptien",
+                            Value = new OpenApiObject
+                            {
+                                ["SessionId"] = new OpenApiString("12345678-1234-1234-1234-123456789012"),
+                                ["ServiceId"] = new OpenApiString("bill_payment"),
+                                ["UserName"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
+                                ["Language"] = new OpenApiString("fr"),
+                                ["ChannelId"] = new OpenApiString("WEB"),
+                                ["IsDemo"] = new OpenApiInteger(1),
+                                ["ParamIn"] = new OpenApiObject
+                                {
+                                    ["Operation"] = new OpenApiString("PAY"),
+                                    ["BillerCode"] = new OpenApiString("EGY-GAS"),
+                                    ["CustomerReference"] = new OpenApiString("GAS789012"),
+                                    ["Amount"] = new OpenApiDouble(89.25),
+                                    ["BillNumber"] = new OpenApiString("GAS-2025-009876"),
+                                    ["PaymentReference"] = new OpenApiString("GAS-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
+                                }
+                            }
+                        },                        ["Paiement multiple"] = new OpenApiExample
+                        {
+                            Summary = "📊 Paiement de plusieurs factures",
+                            Description = "Exemple de paiement groupé pour électricité, eau et gaz en une seule transaction",
+                            Value = new OpenApiObject
+                            {
+                                ["SessionId"] = new OpenApiString("12345678-1234-1234-1234-123456789012"),
+                                ["ServiceId"] = new OpenApiString("bill_payment_multiple"),
+                                ["UserName"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
                                 ["Language"] = new OpenApiString("fr"),
                                 ["ChannelId"] = new OpenApiString("WEB"),
                                 ["IsDemo"] = new OpenApiInteger(1),
@@ -283,16 +371,28 @@ namespace BillPaymentProvider.Extensions
                                         ["BillerCode"] = new OpenApiString("EGY-ELECTRICITY"),
                                         ["CustomerReference"] = new OpenApiString("123456789"),
                                         ["Amount"] = new OpenApiDouble(150.75),
-                                        ["BillNumber"] = new OpenApiString("INV202505150001")
+                                        ["BillNumber"] = new OpenApiString("ELEC-2025-001234"),
+                                        ["PaymentReference"] = new OpenApiString("MULTI-ELEC-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
                                     },
                                     new OpenApiObject
                                     {
                                         ["BillerCode"] = new OpenApiString("EGY-WATER"),
                                         ["CustomerReference"] = new OpenApiString("AB123456"),
                                         ["Amount"] = new OpenApiDouble(75.50),
-                                        ["BillNumber"] = new OpenApiString("INV202505150002")
+                                        ["BillNumber"] = new OpenApiString("WATER-2025-005678"),
+                                        ["PaymentReference"] = new OpenApiString("MULTI-WATER-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
+                                    },
+                                    new OpenApiObject
+                                    {
+                                        ["BillerCode"] = new OpenApiString("EGY-GAS"),
+                                        ["CustomerReference"] = new OpenApiString("GAS789012"),
+                                        ["Amount"] = new OpenApiDouble(89.25),
+                                        ["BillNumber"] = new OpenApiString("GAS-2025-009876"),
+                                        ["PaymentReference"] = new OpenApiString("MULTI-GAS-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
                                     }
-                                }
+                                },
+                                    ["TotalAmount"] = new OpenApiDouble(315.50),
+                                    ["PaymentReference"] = new OpenApiString("MULTI-PAY-" + DateTime.Now.ToString("yyyyMMddHHmmss"))
                                 }
                             }
                         }
@@ -304,26 +404,67 @@ namespace BillPaymentProvider.Extensions
                 // S'assurer que RequestBody et Content existent
                 if (operation.RequestBody?.Content != null &&
                     operation.RequestBody.Content.ContainsKey("application/json"))
-                {
-                    // Exemple de requête pour la consultation
+                {                    // Exemple de requête pour la consultation
                     operation.RequestBody.Content["application/json"].Examples = new Dictionary<string, OpenApiExample>
                     {
-                        ["Consultation facture"] = new OpenApiExample
+                        ["Consultation facture d'électricité"] = new OpenApiExample
                         {
-                            Summary = "Consultation de facture d'électricité",
+                            Summary = "💡 Consultation de facture d'électricité",
+                            Description = "Vérifier le montant et les détails d'une facture d'électricité avant paiement",
                             Value = new OpenApiObject
                             {
                                 ["BillerCode"] = new OpenApiString("EGY-ELECTRICITY"),
                                 ["CustomerReference"] = new OpenApiString("123456789")
                             }
                         },
-                        ["Validation téléphone"] = new OpenApiExample
+                        ["Consultation facture d'eau"] = new OpenApiExample
                         {
-                            Summary = "Validation de numéro Orange",
+                            Summary = "💧 Consultation de facture d'eau",
+                            Description = "Vérifier le montant et les détails d'une facture d'eau avant paiement",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-WATER"),
+                                ["CustomerReference"] = new OpenApiString("AB123456")
+                            }
+                        },
+                        ["Consultation facture de gaz"] = new OpenApiExample
+                        {
+                            Summary = "🔥 Consultation de facture de gaz",
+                            Description = "Vérifier le montant et les détails d'une facture de gaz avant paiement",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-GAS"),
+                                ["CustomerReference"] = new OpenApiString("GAS789012")
+                            }
+                        },
+                        ["Validation numéro Orange"] = new OpenApiExample
+                        {
+                            Summary = "📱 Validation de numéro Orange",
+                            Description = "Vérifier qu'un numéro de téléphone Orange est valide et actif",
                             Value = new OpenApiObject
                             {
                                 ["BillerCode"] = new OpenApiString("EGY-ORANGE"),
                                 ["PhoneNumber"] = new OpenApiString("0101234567")
+                            }
+                        },
+                        ["Validation numéro Vodafone"] = new OpenApiExample
+                        {
+                            Summary = "📱 Validation de numéro Vodafone",
+                            Description = "Vérifier qu'un numéro de téléphone Vodafone est valide et actif",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-VODAFONE"),
+                                ["PhoneNumber"] = new OpenApiString("0121234567")
+                            }
+                        },
+                        ["Validation numéro Etisalat"] = new OpenApiExample
+                        {
+                            Summary = "📱 Validation de numéro Etisalat",
+                            Description = "Vérifier qu'un numéro de téléphone Etisalat est valide et actif",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-ETISALAT"),
+                                ["PhoneNumber"] = new OpenApiString("0111234567")
                             }
                         }
                     };
@@ -334,20 +475,174 @@ namespace BillPaymentProvider.Extensions
                 // S'assurer que RequestBody et Content existent
                 if (operation.RequestBody?.Content != null &&
                     operation.RequestBody.Content.ContainsKey("application/json"))
-                {
-                    // Exemple de requête pour la consultation multiple
+                {                    // Exemple de requête pour la consultation multiple
                     operation.RequestBody.Content["application/json"].Examples = new Dictionary<string, OpenApiExample>
                     {
-                        ["Consultation factures multiples"] = new OpenApiExample
+                        ["Consultation factures multiples électricité"] = new OpenApiExample
                         {
-                            Summary = "Consultation de toutes les factures d'électricité d'un client",
+                            Summary = "💡 Consultation de toutes les factures d'électricité d'un client",
+                            Description = "Obtenir la liste de toutes les factures impayées d'un client pour l'électricité",
                             Value = new OpenApiObject
                             {
                                 ["BillerCode"] = new OpenApiString("EGY-ELECTRICITY"),
                                 ["CustomerReference"] = new OpenApiString("123456789")
                             }
+                        },
+                        ["Consultation factures multiples eau"] = new OpenApiExample
+                        {
+                            Summary = "💧 Consultation de toutes les factures d'eau d'un client",
+                            Description = "Obtenir la liste de toutes les factures impayées d'un client pour l'eau",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-WATER"),
+                                ["CustomerReference"] = new OpenApiString("AB123456")
+                            }
+                        },
+                        ["Consultation factures multiples gaz"] = new OpenApiExample
+                        {
+                            Summary = "🔥 Consultation de toutes les factures de gaz d'un client",
+                            Description = "Obtenir la liste de toutes les factures impayées d'un client pour le gaz",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-GAS"),
+                                ["CustomerReference"] = new OpenApiString("GAS789012")
+                            }
                         }
                     };
+                }
+            }
+            // Ajouter des exemples pour l'authentification
+            else if (context.MethodInfo.Name == "Login" && context.MethodInfo.DeclaringType?.Name == "AuthController")
+            {
+                if (operation.RequestBody?.Content != null &&
+                    operation.RequestBody.Content.ContainsKey("application/json"))
+                {
+                    operation.RequestBody.Content["application/json"].Examples = new Dictionary<string, OpenApiExample>
+                    {
+                        ["Connexion utilisateur standard"] = new OpenApiExample
+                        {
+                            Summary = "🔐 Connexion utilisateur API",
+                            Description = "Authentification avec un compte utilisateur standard",
+                            Value = new OpenApiObject
+                            {
+                                ["Username"] = new OpenApiString("api_user_demo"),
+                                ["Password"] = new OpenApiString("Demo123!"),
+                                ["RememberMe"] = new OpenApiBoolean(false)
+                            }
+                        },
+                        ["Connexion administrateur"] = new OpenApiExample
+                        {
+                            Summary = "🔐 Connexion administrateur",
+                            Description = "Authentification avec un compte administrateur",
+                            Value = new OpenApiObject
+                            {
+                                ["Username"] = new OpenApiString("admin"),
+                                ["Password"] = new OpenApiString("Admin123!"),
+                                ["RememberMe"] = new OpenApiBoolean(true)
+                            }
+                        }
+                    };
+                }
+            }
+            
+            // Ajouter des exemples pour la configuration des créanciers
+            else if (context.MethodInfo.Name == "CreateBiller" && context.MethodInfo.DeclaringType?.Name == "BillerConfigController")
+            {
+                if (operation.RequestBody?.Content != null &&
+                    operation.RequestBody.Content.ContainsKey("application/json"))
+                {
+                    operation.RequestBody.Content["application/json"].Examples = new Dictionary<string, OpenApiExample>
+                    {
+                        ["Nouveau créancier électricité"] = new OpenApiExample
+                        {
+                            Summary = "💡 Créer un créancier d'électricité",
+                            Description = "Configuration d'un nouveau fournisseur d'électricité",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-ELEC-REGION-01"),
+                                ["BillerName"] = new OpenApiString("Électricité Région du Caire"),
+                                ["Description"] = new OpenApiString("Service d'électricité pour la région du Grand Caire"),
+                                ["Category"] = new OpenApiString("ELECTRICITY"),
+                                ["ServiceType"] = new OpenApiString("BILL_PAYMENT"),
+                                ["CustomerReferenceFormat"] = new OpenApiString("^[0-9]{10}$"),
+                                ["SpecificParams"] = new OpenApiString("{\"fixedFee\": 2.0, \"paymentDays\": \"1-28\", \"currency\": \"EGP\"}"),
+                                ["SimulateRandomErrors"] = new OpenApiBoolean(false),
+                                ["ErrorRate"] = new OpenApiInteger(0),
+                                ["ProcessingDelay"] = new OpenApiInteger(300),
+                                ["IsActive"] = new OpenApiBoolean(true)
+                            }
+                        },
+                        ["Nouveau créancier télécom"] = new OpenApiExample
+                        {
+                            Summary = "📱 Créer un créancier télécom",
+                            Description = "Configuration d'un nouveau fournisseur télécom",
+                            Value = new OpenApiObject
+                            {
+                                ["BillerCode"] = new OpenApiString("EGY-ETISALAT"),
+                                ["BillerName"] = new OpenApiString("Etisalat Égypte"),
+                                ["Description"] = new OpenApiString("Recharges et paiements Etisalat"),
+                                ["Category"] = new OpenApiString("TELECOM"),
+                                ["ServiceType"] = new OpenApiString("RECHARGE"),
+                                ["CustomerReferenceFormat"] = new OpenApiString("^011[0-9]{8}$"),
+                                ["SpecificParams"] = new OpenApiString("{\"minAmount\": 10, \"maxAmount\": 500, \"currency\": \"EGP\"}"),
+                                ["SimulateRandomErrors"] = new OpenApiBoolean(true),
+                                ["ErrorRate"] = new OpenApiInteger(3),
+                                ["ProcessingDelay"] = new OpenApiInteger(200),
+                                ["IsActive"] = new OpenApiBoolean(true)
+                            }
+                        }
+                    };
+                }
+            }
+            
+            // Ajouter des exemples pour les recherches de transactions
+            else if (context.MethodInfo.Name == "GetTransactions" && context.MethodInfo.DeclaringType?.Name == "TransactionController")
+            {
+                // Ajouter des exemples de paramètres de requête dans la description
+                operation.Summary = "📊 Recherche et filtrage des transactions";
+                operation.Description = @"
+**Exemples de filtres disponibles :**
+
+🔍 **Par date :** `?startDate=2025-06-01&endDate=2025-06-15`
+💰 **Par montant :** `?minAmount=50&maxAmount=500`
+🏢 **Par créancier :** `?billerCode=EGY-ELECTRICITY`
+✅ **Par statut :** `?status=COMPLETED`
+🆔 **Par référence client :** `?customerReference=123456789`
+📱 **Par canal :** `?channelId=WEB`
+
+**Exemples complets :**
+- Toutes les transactions d'électricité du mois : `?billerCode=EGY-ELECTRICITY&startDate=2025-06-01&endDate=2025-06-30`
+- Transactions échouées récentes : `?status=FAILED&startDate=2025-06-10`
+- Gros montants sur mobile : `?minAmount=1000&channelId=MOBILE`
+";
+            }
+
+            // Ajouter des tags et descriptions personnalisés
+            if (operation.Tags?.Any() == true)
+            {
+                foreach (var tag in operation.Tags)
+                {
+                    switch (tag.Name)
+                    {
+                        case "Payment":
+                            tag.Name = "💰 Paiements";
+                            break;
+                        case "Inquiry":
+                            tag.Name = "🔍 Consultations";
+                            break;
+                        case "Auth":
+                            tag.Name = "🔐 Authentification";
+                            break;
+                        case "Transaction":
+                            tag.Name = "📊 Transactions";
+                            break;
+                        case "BillerConfig":
+                            tag.Name = "⚙️ Configuration";
+                            break;
+                        case "Admin":
+                            tag.Name = "👤 Administration";
+                            break;
+                    }
                 }
             }
         }

@@ -23,9 +23,7 @@ namespace BillPaymentProvider.Controllers
         {
             _paymentService = paymentService;
             _auditLogger = auditLogger;
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Consulte les détails d'une facture ou valide un numéro de téléphone
         /// </summary>
         /// <remarks>
@@ -35,16 +33,16 @@ namespace BillPaymentProvider.Controllers
         /// Exemple de requête pour une facture d'électricité :
         /// ```json
         /// {
-        ///   "CustomerReference": "123456789",
-        ///   "BillerCode": "EGY-ELECTRICITY"
+        ///   "BillerCode": "EGY-ELECTRICITY",
+        ///   "CustomerReference": "123456789"
         /// }
         /// ```
         /// 
         /// Exemple de requête pour une recharge télécom :
         /// ```json
         /// {
-        ///   "PhoneNumber": "0101234567",
-        ///   "BillerCode": "EGY-ORANGE"
+        ///   "BillerCode": "EGY-ORANGE",
+        ///   "PhoneNumber": "0101234567"
         /// }
         /// ```
         /// </remarks>
@@ -53,8 +51,7 @@ namespace BillPaymentProvider.Controllers
         /// <response code="200">Opération réussie</response>
         /// <response code="400">Requête invalide</response>
         /// <response code="404">Facture ou opérateur non trouvé</response>
-        [HttpPost("inquire")]
-        [ProducesResponseType(typeof(object), 200)]
+        [HttpPost("inquire")]        [ProducesResponseType(typeof(InquiryResponse), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         [Authorize(Roles = "Admin,Manager,User")]

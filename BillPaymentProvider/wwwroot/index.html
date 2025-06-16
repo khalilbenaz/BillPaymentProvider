@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egypt BillPayment API - Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #003f5c 0%, #D4AF37 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #003f5c 0%, #D4AF37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header .emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border-color: #D4AF37;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #003f5c;
+        }
+
+        .card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #D4AF37 0%, #003f5c 100%);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #003f5c 0%, #D4AF37 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #228B22 0%, #32CD32 100%);
+            font-size: 1.1rem;
+            padding: 15px 30px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .features h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #003f5c;
+            font-size: 2rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #D4AF37;
+        }
+
+        .feature-item .emoji {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #32CD32;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(50, 205, 50, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(50, 205, 50, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(50, 205, 50, 0); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header .emoji {
+                font-size: 3rem;
+            }
+            
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">🏛️💰📱</div>
+            <h1>Egypt BillPayment API</h1>
+            <p>
+                <span class="status-indicator"></span>
+                API moderne et sécurisée pour les paiements de factures et recharges télécom en Égypte
+            </p>            <a href="/swagger" class="btn btn-primary">🚀 Accéder à la Documentation API</a>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>💡 Paiements de Factures</h3>
+                <p>Électricité, eau, gaz - Paiements sécurisés et instantanés pour tous les services publics égyptiens.</p>                <a href="/swagger/index.html#/Payment" class="btn">Voir les exemples</a>
+            </div>
+
+            <div class="card">
+                <h3>📱 Recharges Télécom</h3>
+                <p>Orange, Vodafone, Etisalat - Recharges rapides pour tous les opérateurs mobiles d'Égypte.</p>
+                <a href="/swagger/index.html#/Payment" class="btn">Tester maintenant</a>
+            </div>
+
+            <div class="card">
+                <h3>🔍 Consultations</h3>
+                <p>Vérification des montants et validation des références avant paiement.</p>
+                <a href="/swagger/index.html#/Inquiry" class="btn">Explorer</a>
+            </div>
+
+            <div class="card">
+                <h3>📊 Suivi Transactions</h3>
+                <p>Historique complet, recherche avancée et rapports détaillés.</p>
+                <a href="/swagger/index.html#/Transaction" class="btn">Consulter</a>
+            </div>
+
+            <div class="card">
+                <h3>🔐 Sécurité JWT</h3>
+                <p>Authentification moderne avec tokens JWT et protection contre les attaques.</p>
+                <a href="/swagger/index.html#/Auth" class="btn">S'authentifier</a>
+            </div>
+
+            <div class="card">
+                <h3>⚙️ Configuration</h3>
+                <p>Gestion dynamique des créanciers et paramètres système.</p>
+                <a href="/swagger/index.html#/BillerConfig" class="btn">Configurer</a>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>🌟 Fonctionnalités Avancées</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span class="emoji">⚡</span>
+                    <span>Traitement temps réel</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">🛡️</span>
+                    <span>Sécurité bancaire</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">📱</span>
+                    <span>API RESTful moderne</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">🔄</span>
+                    <span>Idempotence garantie</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">📈</span>
+                    <span>Monitoring complet</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">🌍</span>
+                    <span>Support multilingue</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">⚙️</span>
+                    <span>Configuration flexible</span>
+                </div>
+                <div class="feature-item">
+                    <span class="emoji">📊</span>
+                    <span>Rapports détaillés</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Egypt BillPayment API - Version 1.0 | Développé avec ❤️ pour l'Égypte</p>
+            <p>Documentation interactive générée par Swagger UI</p>
+        </div>
+    </div>
+
+    <script>
+        // Animation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Vérification du statut de l'API
+        async function checkApiStatus() {
+            try {
+                const response = await fetch('/health');
+                const indicator = document.querySelector('.status-indicator');
+                if (response.ok) {
+                    indicator.style.background = '#32CD32';
+                } else {
+                    indicator.style.background = '#DC143C';
+                }
+            } catch (error) {
+                const indicator = document.querySelector('.status-indicator');
+                indicator.style.background = '#DC143C';
+            }
+        }
+
+        // Vérifier le statut toutes les 30 secondes
+        checkApiStatus();
+        setInterval(checkApiStatus, 30000);
+    </script>
+</body>
+</html>
